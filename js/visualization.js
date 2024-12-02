@@ -21,6 +21,7 @@ function renderVisualizations() {
 
   // Render ridership line chart
   visHolder.append("div").attr("class", "railRidershipByTimePeriod-chart");
+  visHolder.append("div").attr("class", "monthlyRidershipByModechart");
 
   // Render ridership line chart
   railRidershipByTimePeriodChart(railRidershipByTimePeriodChartConfig);
@@ -29,6 +30,6 @@ function renderVisualizations() {
 }
 
 // Execute the rendering function when the document is ready
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
   renderVisualizations();
 });
