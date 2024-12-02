@@ -4,7 +4,7 @@
 
 // Configuration for different charts
 const railRidershipByTimePeriodChartConfig = {
-  width: 720,
+  width: 1440,
   height: 480,
   container: ".railRidershipByTimePeriod-chart"
 };
