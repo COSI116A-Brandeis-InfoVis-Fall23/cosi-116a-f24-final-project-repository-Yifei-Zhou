@@ -1,4 +1,4 @@
-// Create a function for the Ridership By Time Period D3 line chart
+// Create a function for the D3 line chart
 function ridershipByTimePeriodChart(config) {
     const { width, height } = config;
     const margin = {top: 50, right: 150, bottom: 50, left: 50};
@@ -50,7 +50,7 @@ function ridershipByTimePeriodChart(config) {
       // Add lines for each route
       const color = d3.scaleOrdinal(d3.schemeCategory10);
   
-      svg.selectAll(".line")
+      const lines = svg.selectAll(".line")
         .data(nestedData)
         .enter()
         .append("path")
@@ -71,6 +71,66 @@ function ridershipByTimePeriodChart(config) {
         .style("fill", d => color(d.key))
         .text(d => d.key);
   
+      // Add brushing
+      const brush = d3.brush()
+        .extent([[0, 0], [width, height]])
+        .on("brush end", brushed);
+  
+      svg.append("g")
+        .attr("class", "brush")
+        .call(brush);
+  
+      function brushed(event) {
+        if (event.selection) {
+          const [[x0, y0], [x1, y1]] = event.selection;
+          lines.style("stroke-opacity", d => {
+            const visible = d.values.some(point => {
+              const x = xScale(point.key);
+              const y = yScale(point.value);
+              return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+            });
+            return visible ? 1 : 0.1;
+          });
+        } else {
+          lines.style("stroke-opacity", 1);
+        }
+      }
+  
+      // Add zooming
+      const zoom = d3.zoom()
+        .scaleExtent([1, 10])
+        .translateExtent([[0, 0], [width, height]])
+        .on("zoom", zoomed);
+  
+      svg.append("rect")
+        .attr("width", width)
+        .attr("height", height)
+        .style("fill", "none")
+        .style("pointer-events", "all")
+        .call(zoom);
+  
+      function zoomed(event) {
+        const transform = event.transform;
+        const newXScale = transform.rescaleX(xScale);
+        const newYScale = transform.rescaleY(yScale);
+  
+        svg.select(".x-axis").call(d3.axisBottom(newXScale));
+        svg.select(".y-axis").call(d3.axisLeft(newYScale));
+  
+        lines.attr("d", d => line.x(d => newXScale(d.key)).y(d => newYScale(d.value))(d.values));
+      }
+  
+      // Add highlighting on line selection
+      lines.on("mouseover", function(event, d) {
+        d3.select(this)
+          .style("stroke-width", 4)
+          .style("stroke-opacity", 1);
+      }).on("mouseout", function(event, d) {
+        d3.select(this)
+          .style("stroke-width", 2)
+          .style("stroke-opacity", 1);
+      });
+  
     }).catch(function(error) {
       console.error("Error loading the data: ", error);
     });
@@ -78,3 +138,4 @@ function ridershipByTimePeriodChart(config) {
   
   // Example usage in visualization.js
   // var myChart = ridershipChart({ width: 720, height: 480 });
+  
