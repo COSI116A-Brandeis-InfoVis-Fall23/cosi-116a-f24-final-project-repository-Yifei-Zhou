@@ -83,7 +83,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("x", width / 2)
       .attr("y", height + margin.bottom - 10)
       .style("text-anchor", "middle")
-      .text("Time Period Name");
+      .text("Time Period Type");
 
     // Add y-axis label
     svg.append("text")
@@ -92,7 +92,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("y", -margin.left + 20)
       .attr("transform", "rotate(-90)")
       .style("text-anchor", "middle")
-      .text("Mean Flow");
+      .text("Average Flow of Daily Ridership");
 
     // Add chart title
     svg.append("text")
@@ -102,7 +102,7 @@ function railRidershipByTimePeriodChart(config) {
       .style("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "bold")
-      .text("MBTA Rail Ridership Data by Route and Time Period");
+      .text("MBTA Rail Daily Ridership Data by Route and Time Period");
 
     // Add lines for each route
     const color = d3.scaleOrdinal(d3.schemeCategory10);
