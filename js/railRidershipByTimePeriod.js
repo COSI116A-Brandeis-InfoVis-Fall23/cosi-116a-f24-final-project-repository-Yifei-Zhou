@@ -14,7 +14,7 @@ function railRidershipByTimePeriodChart(config) {
 
   containerElement.selectAll("svg").remove(); // Clear previous SVG if it exists
 
-  const svg = containerElement.append("svg")
+  const svg = containerElement.append("svg").style("display", "block").style("margin", "0 auto")
         .attr("width", svgWidth)
         .attr("height", svgHeight)
       .append("g")
