@@ -55,7 +55,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("x", width / 2)
       .attr("y", height + margin.bottom - 10)
       .style("text-anchor", "middle")
-      .text("Time Period Name");
+      .text("Time Period");
 
     // Add y-axis label
     svg.append("text")
@@ -64,7 +64,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("y", -margin.left + 20)
       .attr("transform", "rotate(-90)")
       .style("text-anchor", "middle")
-      .text("Average Flow");
+      .text("Average Daily Ridership");
 
     // Add chart title
     svg.append("text")
