@@ -1,27 +1,44 @@
 // Create a function for the D3 line chart
 function railRidershipByTimePeriodChart(config) {
-  const { width, height } = config;
+  const { width, height, container } = config;
   const margin = {top: 50, right: 150, bottom: 70, left: 70};
 
   const svgWidth = width + margin.left + margin.right;
   const svgHeight = height + margin.top + margin.bottom;
 
-  d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function(data) {
-    // Parse data to group and format it for D3 line chart
-    const nestedData = d3.nest()
-      .key(d => d.route_name)
-      .key(d => d.time_period_name)
-      .rollup(values => d3.sum(values, v => +v.average_flow))
-      .entries(data);
+  const containerElement = d3.select(container);
+  if (containerElement.empty()) {
+    console.error("Container element not found: ", container);
+    return;
+  }
 
-    const svg = d3.select("body").append("svg")
+  containerElement.selectAll("svg").remove(); // Clear previous SVG if it exists
+
+  const svg = containerElement.append("svg")
         .attr("width", svgWidth)
         .attr("height", svgHeight)
       .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
 
+  console.log("Loading data from: ../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv");
+
+  d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function(data) {
+    console.log("Data loaded: ", data);
+
+    // Parse data to group and format it for D3 line chart
+    const nestedData = Array.from(d3.group(data, d => d.route_name), ([key, values]) => ({
+      key: key,
+      values: Array.from(d3.group(values, d => d.time_period_name), ([timeKey, timeValues]) => ({
+        key: timeKey,
+        value: d3.sum(timeValues, v => +v.average_flow)
+      }))
+    }));
+
+    console.log("Nested data: ", nestedData);
+
     // Extract unique x-axis values (time_period_name categories)
     const timePeriods = [...new Set(data.map(d => d.time_period_name))];
+    console.log("Time periods: ", timePeriods);
 
     // Define scales
     const xScale = d3.scalePoint()
@@ -55,7 +72,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("x", width / 2)
       .attr("y", height + margin.bottom - 10)
       .style("text-anchor", "middle")
-      .text("Time Period");
+      .text("Time Period Name");
 
     // Add y-axis label
     svg.append("text")
@@ -64,7 +81,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("y", -margin.left + 20)
       .attr("transform", "rotate(-90)")
       .style("text-anchor", "middle")
-      .text("Average Daily Ridership");
+      .text("Average Flow");
 
     // Add chart title
     svg.append("text")
@@ -74,7 +91,7 @@ function railRidershipByTimePeriodChart(config) {
       .style("text-anchor", "middle")
       .style("font-size", "16px")
       .style("font-weight", "bold")
-      .text("MBTA Rail Ridership by Route and Time Period");
+      .text("MBTA Rail Ridership Data by Route and Time Period");
 
     // Add lines for each route
     const color = d3.scaleOrdinal(d3.schemeCategory10);
@@ -164,3 +181,6 @@ function railRidershipByTimePeriodChart(config) {
     console.error("Error loading the data: ", error);
   });
 }
+
+// Example usage
+// var myChart = railRidershipByTimePeriodChart({ width: 720, height: 480, container: ".ridership-chart" });

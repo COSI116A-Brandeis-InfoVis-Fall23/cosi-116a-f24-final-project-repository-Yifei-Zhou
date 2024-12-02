@@ -5,7 +5,8 @@
 // Configuration for different charts
 const railRidershipByTimePeriodChartConfig = {
   width: 720,
-  height: 480
+  height: 480,
+  container: ".railRidershipByTimePeriod-chart"
 };
 
 const monthlyRidershipByModeChartConfig = {
@@ -15,6 +16,12 @@ const monthlyRidershipByModeChartConfig = {
 
 // Function to render all visualizations
 function renderVisualizations() {
+  // Select the container element for the visualizations
+  const visHolder = d3.select(".vis-holder");
+
+  // Render ridership line chart
+  visHolder.append("div").attr("class", "railRidershipByTimePeriod-chart");
+
   // Render ridership line chart
   railRidershipByTimePeriodChart(railRidershipByTimePeriodChartConfig);
 
