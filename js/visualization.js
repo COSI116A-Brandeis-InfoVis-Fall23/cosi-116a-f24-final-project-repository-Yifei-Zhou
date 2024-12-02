@@ -7,6 +7,10 @@
 // and continue processing the data.
 ((() => {
 
-  console.log("Hello, world!");
+  // Create the rail ridership by time period line chart
+  var railRidershipByTimePeriod = railRidershipByTimePeriodChart({ width: 720, height: 480 });
+
+  // Create the monthly ridership by mode line chart
+  var monthlyRidershipByMode = monthlyRidershipByModeChart({ width: 720, height: 480 });
 
 })());

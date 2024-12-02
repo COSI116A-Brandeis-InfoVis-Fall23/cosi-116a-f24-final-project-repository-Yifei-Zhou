@@ -164,6 +164,3 @@ function railRidershipByTimePeriodChart(config) {
     console.error("Error loading the data: ", error);
   });
 }
-
-// Example usage in visualization.js
-// var myChart = ridershipChart({ width: 720, height: 480 });
