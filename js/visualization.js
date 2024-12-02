@@ -2,15 +2,26 @@
 // variables and prevent 
 // visualization.js
 
-// Load the data
-// Using d3.csv with a callback function to handle the error
-// and continue processing the data.
-((() => {
+// Configuration for different charts
+const railRidershipByTimePeriodChartConfig = {
+  width: 720,
+  height: 480
+};
 
-  // Create the rail ridership by time period line chart
-  var railRidershipByTimePeriod = railRidershipByTimePeriodChart({ width: 720, height: 480 });
+const monthlyRidershipByModeChartConfig = {
+  width: 600,
+  height: 400
+};
 
-  // Create the monthly ridership by mode line chart
-  var monthlyRidershipByMode = monthlyRidershipByModeChart({ width: 720, height: 480 });
+// Function to render all visualizations
+function renderVisualizations() {
+  // Render ridership line chart
+  railRidershipByTimePeriodChart(railRidershipByTimePeriodChartConfig);
 
-})());
+  monthlyRidershipByModeChart(monthlyRidershipByModeChartConfig);
+}
+
+// Execute the rendering function when the document is ready
+document.addEventListener("DOMContentLoaded", function() {
+  renderVisualizations();
+});
