@@ -1,131 +1,150 @@
-d3.csv("../data/MBTA_Monthly_Ridership_By_Mode.csv", function (data) {
-    // Parse your data here
-    data.forEach(function (d) {
-        d.date = d3.timeParse("%Y-%m-%d")(d.date);
-        d.ridership = +d.ridership;
-        // Add more parsing if needed
-    });
+// Create a function for the Ridership By Route D3 line chart with brushing, linking, filtering, zooming, highlighting, and dynamic legends
+function ridershipByRouteChart(config) {
+    const { width, height } = config;
+    const margin = { top: 50, right: 150, bottom: 50, left: 50 };
 
-    // Call the functions to draw charts
-    drawRidershipChart(data);
-    drawDelayReasonsChart(data);
-    drawTimePeriodChart(data);
-});
+    const svgWidth = width + margin.left + margin.right;
+    const svgHeight = height + margin.top + margin.bottom;
 
-// Brush over "Daily Ridership by Metro Line" chart to highlight corresponding data
-function drawRidershipChart(data) {
-    let margin = { top: 20, right: 30, bottom: 40, left: 50 },
-        width = 800 - margin.left - margin.right,
-        height = 400 - margin.top - margin.bottom;
+    d3.csv("../data/MBTA_Monthly_Ridership_By_Mode,csv").then(function (data) {
+        // Parse data to group and format it for D3 line chart
+        const nestedData = d3.nest()
+            .key(d => d.route_name)
+            .rollup(values => d3.sum(values, v => +v.average_flow))
+            .entries(data);
 
-    let svg = d3.select("#ridership-chart").append("svg")
-        .attr("width", width + margin.left + margin.right)
-        .attr("height", height + margin.top + margin.bottom)
-        .append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+        const svg = d3.select("body").append("svg")
+            .attr("width", svgWidth)
+            .attr("height", svgHeight)
+            .append("g")
+            .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    let x = d3.scaleTime()
-        .domain(d3.extent(data, d => d.date))
-        .range([0, width]);
+        // Extract unique x-axis values (route_name categories)
+        const routes = [...new Set(data.map(d => d.route_name))];
 
-    let y = d3.scaleLinear()
-        .domain([0, d3.max(data, d => d.ridership)])
-        .range([height, 0]);
+        // Define scales
+        const xScale = d3.scalePoint()
+            .domain(routes)
+            .range([0, width]);
 
-    let line = d3.line()
-        .x(d => x(d.date))
-        .y(d => y(d.ridership));
+        const yScale = d3.scaleLinear()
+            .domain([0, d3.max(nestedData, d => d.value)])
+            .nice()
+            .range([height, 0]);
 
-    svg.append("g")
-        .attr("class", "x-axis")
-        .attr("transform", "translate(0," + height + ")")
-        .call(d3.axisBottom(x));
+        // Define line generator
+        const line = d3.line()
+            .x(d => xScale(d.key))
+            .y(d => yScale(d.value));
 
-    svg.append("g")
-        .attr("class", "y-axis")
-        .call(d3.axisLeft(y));
+        // Add x-axis
+        svg.append("g")
+            .attr("transform", `translate(0,${height})`)
+            .call(d3.axisBottom(xScale));
 
-    svg.append("path")
-        .datum(data)
-        .attr("class", "line")
-        .attr("d", line);
+        // Add y-axis
+        svg.append("g")
+            .call(d3.axisLeft(yScale));
 
-    let brush = d3.brushX()
-        .extent([[0, 0], [width, height]])
-        .on("brush end", brushed);
+        // Add lines for each route
+        const color = d3.scaleOrdinal(d3.schemeCategory10);
 
-    svg.append("g")
-        .attr("class", "brush")
-        .call(brush);
+        const lines = svg.selectAll(".line")
+            .data(nestedData)
+            .enter()
+            .append("path")
+            .attr("class", "line")
+            .attr("d", d => line([d]))
+            .style("fill", "none")
+            .style("stroke", d => color(d.key))
+            .style("stroke-width", 2);
 
-    function brushed({ selection }) {
-        if (selection) {
-            let [x0, x1] = selection.map(x.invert);
-            highlightDataInLinkedCharts(x0, x1);
+        // Add brushing to highlight linked data
+        const brush = d3.brushX()
+            .extent([[0, 0], [width, height]])
+            .on("brush end", brushed);
+
+        svg.append("g")
+            .attr("class", "brush")
+            .call(brush);
+
+        function brushed({ selection }) {
+            if (selection) {
+                const [x0, x1] = selection;
+                const brushedRoutes = xScale.domain().filter(d => {
+                    const x = xScale(d);
+                    return x >= x0 && x <= x1;
+                });
+                lines.style("opacity", d => brushedRoutes.includes(d.key) ? 1 : 0.1);
+            } else {
+                lines.style("opacity", 1);
+            }
         }
-    }
-}
 
-// Highlighting selected lines
-function drawDelayReasonsChart(data) {
-    let svg = d3.select("#delay-reasons-chart").append("svg")
-        .attr("width", 800)
-        .attr("height", 400);
+        // Add legend with dynamic toggling
+        const legend = svg.selectAll(".legend")
+            .data(nestedData)
+            .enter()
+            .append("g")
+            .attr("class", "legend")
+            .attr("transform", (d, i) => `translate(${width + 10},${i * 20})`)
+            .on("click", function (event, d) {
+                const isActive = d3.select(this).classed("active");
+                d3.select(this).classed("active", !isActive);
+                lines.filter(l => l.key === d.key).style("opacity", isActive ? 0.1 : 1);
+            });
 
-    // Example implementation for highlighting lines
-    d3.selectAll(".line")
-        .on("click", function (event, d) {
-            let selectedLine = d.line; // e.g., "Red Line"
-            d3.selectAll(".line")
-                .classed("highlighted", line => line === selectedLine)
-                .classed("faded", line => line !== selectedLine);
+        legend.append("rect")
+            .attr("x", 0)
+            .attr("y", -10)
+            .attr("width", 12)
+            .attr("height", 12)
+            .style("fill", d => color(d.key));
+
+        legend.append("text")
+            .attr("x", 20)
+            .attr("y", 0)
+            .text(d => d.key);
+
+        // Add tooltip
+        const tooltip = d3.select("body").append("div")
+            .attr("class", "tooltip")
+            .style("position", "absolute")
+            .style("background", "white")
+            .style("border", "1px solid black")
+            .style("padding", "5px")
+            .style("display", "none");
+
+        lines.on("mouseover", function (event, d) {
+            d3.select(this).style("stroke-width", 4);
+            tooltip.style("display", "block")
+                .html(`<strong>Route:</strong> ${d.key}<br><strong>Average Flow:</strong> ${d.value}`);
+        }).on("mousemove", function (event) {
+            tooltip.style("left", `${event.pageX + 10}px`)
+                .style("top", `${event.pageY + 10}px`);
+        }).on("mouseout", function () {
+            d3.select(this).style("stroke-width", 2);
+            tooltip.style("display", "none");
         });
+
+        // Add zoom functionality
+        const zoom = d3.zoom()
+            .scaleExtent([1, 10])
+            .translateExtent([[0, 0], [width, height]])
+            .on("zoom", zoomed);
+
+        svg.call(zoom);
+
+        function zoomed({ transform }) {
+            const newXScale = transform.rescaleX(xScale);
+            svg.select(".x-axis").call(d3.axisBottom(newXScale));
+            lines.attr("d", d => line.x(d => newXScale(d.key))([d]));
+        }
+
+    }).catch(function (error) {
+        console.error("Error loading the data: ", error);
+    });
 }
 
-// Zooming functionality for temporal charts
-function drawTimePeriodChart(data) {
-    let svg = d3.select("#time-period-chart").append("svg")
-        .attr("width", 800)
-        .attr("height", 400);
-
-    let x = d3.scaleTime().domain(d3.extent(data, d => d.date)).range([0, 800]);
-    let zoom = d3.zoom()
-        .scaleExtent([1, 10])
-        .translateExtent([[0, 0], [800, 400]])
-        .on("zoom", zoomed);
-
-    function zoomed({ transform }) {
-        d3.select(".x-axis").call(d3.axisBottom(x).scale(transform.rescaleX(x)));
-        d3.selectAll(".line").attr("transform", transform);
-    }
-
-    svg.call(zoom);
-}
-
-// Tooltip implementation
-function setupTooltip() {
-    let tooltip = d3.select("body").append("div")
-        .attr("class", "tooltip")
-        .style("opacity", 0);
-
-    d3.selectAll(".line")
-        .on("mouseover", function (event, d) {
-            tooltip.transition()
-                .duration(200)
-                .style("opacity", .9);
-            tooltip.html(`Ridership: ${d.ridership}<br>Delay: ${d.delayDetails}`)
-                .style("left", (event.pageX + 5) + "px")
-                .style("top", (event.pageY - 28) + "px");
-        })
-        .on("mouseout", function () {
-            tooltip.transition()
-                .duration(500)
-                .style("opacity", 0);
-        });
-}
-
-// Filters for date ranges and line-specific data
-d3.select("#date-filter").on("change", function () {
-    let dateRange = d3.select(this).property("value");
-    filterDataByDateRange(dateRange);
-});
+// Example usage in visualization.js
+// var myChart = ridershipByRouteChart({ width: 720, height: 480 });
