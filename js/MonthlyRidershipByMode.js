@@ -1,5 +1,5 @@
 // Create a function for the D3 line chart
-function MonthlyRidershipByModeChart(config) {
+function monthlyRidershipByModeChart(config) {
     const { width, height, container } = config;
     const margin = { top: 50, right: 150, bottom: 70, left: 70 };
 
@@ -22,38 +22,36 @@ function MonthlyRidershipByModeChart(config) {
 
     console.log("Loading data from: ../data/MBTA_Monthly_Ridership_By_Mode.csv");
 
-    d3.csv("../data/MonthlyRidershipByMode.csv").then(function (data) {
+    d3.csv("../data/MBTA_Monthly_Ridership_By_Mode.csv").then(function (data) {
         console.log("Data loaded: ", data);
 
         // Parse data to group and format it for D3 line chart
+        data.forEach(d => {
+            d.date = d3.timeParse("%Y-%m-%d")(d.date);
+            d.ridership = +d.ridership;
+        });
+
         const nestedData = Array.from(d3.group(data, d => d.mode), ([key, values]) => ({
             key: key,
-            values: Array.from(d3.group(values, d => d.average_monthly_weekday_ridersh), ([timeKey, timeValues]) => ({
-                key: timeKey,
-                value: d3.sum(timeValues, v => +v.average_flow)
-            }))
+            values: values.sort((a, b) => d3.ascending(a.date, b.date))
         }));
 
         console.log("Nested data: ", nestedData);
 
-        // Extract unique x-axis values (time_period_name categories)
-        const timePeriods = [...new Set(data.map(d => d.time_period_name))];
-        console.log("Time periods: ", timePeriods);
-
         // Define scales
-        const xScale = d3.scalePoint()
-            .domain(timePeriods)
+        const xScale = d3.scaleTime()
+            .domain(d3.extent(data, d => d.date))
             .range([0, width]);
 
         const yScale = d3.scaleLinear()
-            .domain([0, d3.max(nestedData, d => d3.max(d.values, t => t.value))])
+            .domain([0, d3.max(data, d => d.ridership)])
             .nice()
             .range([height, 0]);
 
         // Define line generator
         const line = d3.line()
-            .x(d => xScale(d.key))
-            .y(d => yScale(d.value));
+            .x(d => xScale(d.date))
+            .y(d => yScale(d.ridership));
 
         // Add x-axis
         svg.append("g")
@@ -72,7 +70,7 @@ function MonthlyRidershipByModeChart(config) {
             .attr("x", width / 2)
             .attr("y", height + margin.bottom - 10)
             .style("text-anchor", "middle")
-            .text("Time Period Name");
+            .text("Date");
 
         // Add y-axis label
         svg.append("text")
@@ -81,7 +79,7 @@ function MonthlyRidershipByModeChart(config) {
             .attr("y", -margin.left + 20)
             .attr("transform", "rotate(-90)")
             .style("text-anchor", "middle")
-            .text("Average Flow");
+            .text("Ridership");
 
         // Add chart title
         svg.append("text")
@@ -91,9 +89,9 @@ function MonthlyRidershipByModeChart(config) {
             .style("text-anchor", "middle")
             .style("font-size", "16px")
             .style("font-weight", "bold")
-            .text("MBTA Rail Ridership Data by Route and Time Period");
+            .text("MBTA Monthly Ridership by Mode");
 
-        // Add lines for each route
+        // Add lines for each mode
         const color = d3.scaleOrdinal(d3.schemeCategory10);
 
         const lines = svg.selectAll(".line")
@@ -131,8 +129,8 @@ function MonthlyRidershipByModeChart(config) {
                 const [[x0, y0], [x1, y1]] = event.selection;
                 lines.style("stroke-opacity", d => {
                     const visible = d.values.some(point => {
-                        const x = xScale(point.key);
-                        const y = yScale(point.value);
+                        const x = xScale(point.date);
+                        const y = yScale(point.ridership);
                         return x >= x0 && x <= x1 && y >= y0 && y <= y1;
                     });
                     return visible ? 1 : 0.1;
@@ -163,7 +161,7 @@ function MonthlyRidershipByModeChart(config) {
             svg.select(".x-axis").call(d3.axisBottom(newXScale));
             svg.select(".y-axis").call(d3.axisLeft(newYScale));
 
-            lines.attr("d", d => line.x(d => newXScale(d.key)).y(d => newYScale(d.value))(d.values));
+            lines.attr("d", d => line.x(d => newXScale(d.date)).y(d => newYScale(d.ridership))(d.values));
         }
 
         // Add highlighting on line selection
@@ -181,6 +179,7 @@ function MonthlyRidershipByModeChart(config) {
         console.error("Error loading the data: ", error);
     });
 }
+
 
 // Example usage
 // var myChart = d.average_monthly_weekday_ridershChart({ width: 720, height: 480, container: ".ridership-chart" });

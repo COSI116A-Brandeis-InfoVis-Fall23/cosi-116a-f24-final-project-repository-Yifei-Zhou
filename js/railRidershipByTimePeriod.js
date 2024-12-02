@@ -1,7 +1,7 @@
 // Create a function for the D3 line chart
 function railRidershipByTimePeriodChart(config) {
   const { width, height, container } = config;
-  const margin = {top: 50, right: 150, bottom: 70, left: 70};
+  const margin = { top: 50, right: 150, bottom: 70, left: 70 };
 
   const svgWidth = width + margin.left + margin.right;
   const svgHeight = height + margin.top + margin.bottom;
@@ -15,14 +15,14 @@ function railRidershipByTimePeriodChart(config) {
   containerElement.selectAll("svg").remove(); // Clear previous SVG if it exists
 
   const svg = containerElement.append("svg").style("display", "block").style("margin", "0 auto")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight)
-      .append("g")
-        .attr("transform", `translate(${margin.left},${margin.top})`);
+    .attr("width", svgWidth)
+    .attr("height", svgHeight)
+    .append("g")
+    .attr("transform", `translate(${margin.left},${margin.top})`);
 
   console.log("Loading data from: ../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv");
 
-  d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function(data) {
+  d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function (data) {
     console.log("Data loaded: ", data);
 
     // Ensure the time periods are sorted in a logical order
@@ -178,17 +178,17 @@ function railRidershipByTimePeriodChart(config) {
     }
 
     // Add highlighting on line selection
-    lines.on("mouseover", function(event, d) {
+    lines.on("mouseover", function (event, d) {
       d3.select(this)
         .style("stroke-width", 4)
         .style("stroke-opacity", 1);
-    }).on("mouseout", function(event, d) {
+    }).on("mouseout", function (event, d) {
       d3.select(this)
         .style("stroke-width", 2)
         .style("stroke-opacity", 1);
     });
 
-  }).catch(function(error) {
+  }).catch(function (error) {
     console.error("Error loading the data: ", error);
   });
 }
