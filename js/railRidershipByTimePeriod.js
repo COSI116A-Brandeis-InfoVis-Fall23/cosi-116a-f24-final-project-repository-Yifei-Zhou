@@ -25,19 +25,30 @@ function railRidershipByTimePeriodChart(config) {
   d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function(data) {
     console.log("Data loaded: ", data);
 
+    // Ensure the time periods are sorted in a logical order
+    const timePeriodOrder = [
+      "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL", "MIDDAY_BASE", "PM_PEAK", "EVENING", "LATE_EVENING", "NIGHT", "OFF_PEAK"
+    ];
+
+    // Sort the data based on the order of time periods
+    data.sort((a, b) => timePeriodOrder.indexOf(a.time_period_name) - timePeriodOrder.indexOf(b.time_period_name));
+
     // Parse data to group and format it for D3 line chart
     const nestedData = Array.from(d3.group(data, d => d.route_name), ([key, values]) => ({
       key: key,
-      values: Array.from(d3.group(values, d => d.time_period_name), ([timeKey, timeValues]) => ({
-        key: timeKey,
-        value: d3.sum(timeValues, v => +v.average_flow)
-      }))
+      values: timePeriodOrder.map(timeKey => {
+        const filteredValues = values.filter(d => d.time_period_name === timeKey);
+        return {
+          key: timeKey,
+          value: d3.mean(filteredValues, v => +v.average_flow)
+        };
+      })
     }));
 
     console.log("Nested data: ", nestedData);
 
     // Extract unique x-axis values (time_period_name categories)
-    const timePeriods = [...new Set(data.map(d => d.time_period_name))];
+    const timePeriods = timePeriodOrder;
     console.log("Time periods: ", timePeriods);
 
     // Define scales
@@ -81,7 +92,7 @@ function railRidershipByTimePeriodChart(config) {
       .attr("y", -margin.left + 20)
       .attr("transform", "rotate(-90)")
       .style("text-anchor", "middle")
-      .text("Average Flow");
+      .text("Mean Flow");
 
     // Add chart title
     svg.append("text")
