@@ -10,7 +10,7 @@ function monthlyRidershipByModeChart(config) {
         // Parse data to group and format it for D3 line chart
         const nestedData = d3.nest()
             .key(d => d.mode)
-            .key(d => d.month)
+            .key(d => d.average_monthly_weekday_ridersh)
             .rollup(values => d3.sum(values, v => +v.average_flow))
             .entries(data);
 
@@ -21,7 +21,7 @@ function monthlyRidershipByModeChart(config) {
             .attr("transform", `translate(${margin.left},${margin.top})`);
 
         // Extract unique x-axis values (month categories)
-        const months = [...new Set(data.map(d => d.month))];
+        const months = [...new Set(data.map(d => d.average_monthly_weekday_ridersh))];
 
         // Define scales
         const xScale = d3.scalePoint()
