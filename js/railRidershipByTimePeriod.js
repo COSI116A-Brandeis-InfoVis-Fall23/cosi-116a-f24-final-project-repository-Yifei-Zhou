@@ -27,7 +27,7 @@ function railRidershipByTimePeriodChart(config) {
 
     // Ensure the time periods are sorted in a logical order
     const timePeriodOrder = [
-      "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL", "MIDDAY_BASE", "PM_PEAK", "EVENING", "LATE_EVENING", "NIGHT", "OFF_PEAK"
+      "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL", "MIDDAY_BASE", "PM_PEAK", "EVENING", "LATE_EVENING", "NIGHT"
     ];
 
     // Sort the data based on the order of time periods
@@ -36,7 +36,7 @@ function railRidershipByTimePeriodChart(config) {
     // Parse data to group and format it for D3 line chart
     const nestedData = Array.from(d3.group(data, d => d.route_name), ([key, values]) => ({
       key: key,
-      values: timePeriodOrder.map(timeKey => {
+      values: timePeriodOrder.filter(timeKey => timeKey !== "OFF_PEAK").map(timeKey => {
         const filteredValues = values.filter(d => d.time_period_name === timeKey);
         return {
           key: timeKey,
