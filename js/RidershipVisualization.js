@@ -47,3 +47,20 @@ svg.append("path")
     .data([data])
     .attr("class", "line")
     .attr("d", line);
+
+    const brush = d3.brushX()
+    .extent([[0, 0], [width, height]])
+    .on("end", brushEnded);
+
+svg.append("g")
+    .attr("class", "brush")
+    .call(brush);
+
+function brushEnded(event) {
+    const selection = event.selection;
+    if (selection) {
+        const [start, end] = selection.map(x.invert);
+        const filteredData = data.filter(d => d.date >= start && d.date <= end);
+        console.log("Brushed data:", filteredData);
+    }
+}
