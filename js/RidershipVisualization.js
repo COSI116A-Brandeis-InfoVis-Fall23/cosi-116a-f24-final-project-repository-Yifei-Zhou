@@ -94,3 +94,26 @@ svg.selectAll("circle")
     .on("mouseout", function() {
         d3.select(this).attr("r", 3).style("fill", "black");
     });
+
+
+    d3.select("body").append("select")
+    .attr("id", "seasonFilter")
+    .selectAll("option")
+    .data([...new Set(data.map(d => d.season))])
+    .enter().append("option")
+    .text(d => d)
+    .on("change", function() {
+        const selectedSeason = d3.select("#seasonFilter").property("value");
+        const filteredData = data.filter(d => d.season === selectedSeason);
+        updateChart(filteredData);
+    });
+
+function updateChart(filteredData) {
+    x.domain(d3.extent(filteredData, d => d.date));
+    y.domain([0, d3.max(filteredData, d => d.ridership)]);
+
+    svg.select(".x.axis").call(xAxis);
+    svg.select(".y.axis").call(yAxis);
+
+    svg.select(".line").data([filteredData]).attr("d", line);
+}
