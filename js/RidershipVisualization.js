@@ -26,3 +26,13 @@ svg.append("g")
 svg.append("g")
     .attr("class", "y axis")
     .call(yAxis);
+
+
+
+data.forEach(function(d) {
+    d.date = new Date(d.date);
+    d.ridership = +d.ridership;
+});
+
+x.domain(d3.extent(data, function(d) { return d.date; }));
+y.domain([0, d3.max(data, function(d) { return d.ridership; })]);
