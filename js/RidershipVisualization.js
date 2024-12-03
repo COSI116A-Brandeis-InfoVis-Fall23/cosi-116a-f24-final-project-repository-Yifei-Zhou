@@ -117,3 +117,11 @@ function updateChart(filteredData) {
 
     svg.select(".line").data([filteredData]).attr("d", line);
 }
+
+
+svg.on("click", function() {
+    // Clicking on blank areas will clear highlights
+    svg.selectAll("circle").attr("r", 3).style("fill", "black");
+});
+
+console.log("Visualization complete");
