@@ -42,7 +42,6 @@
         href="https://cs.brandeis.edu/~dylan/">Prof. Dylan Cashman</a>, <a href="https://cs.brandeis.edu/">Brandeis
         University</a>.</p>
 
-
     <h1>Motivation</h1>
 
     <p>Our project focuses on analyzing the Boston Public Transportation system 
@@ -89,6 +88,7 @@
 
   <!-- Your visualization here -->
   <div class="vis-holder">
+    <!-- Existing visualizations -->
   </div>
 
   <!-- Your writeup goes here -->
@@ -105,6 +105,10 @@
         a <a href="http://www.ccs.neu.edu/home/cody/courses/shared/d3-flexible-transitions.mp4">link to the video</a>
         instead.</p>
     </video>
+
+    <h1>Ridership Heatmap</h1>
+    <p>This visualization shows the average ridership flow across stops and time periods.</p>
+    <div class="ridership-heatmap"></div>
 
     <h1>Visualization explanation</h1>
 
@@ -180,11 +184,13 @@
 
   </div>
 
-  <!-- Scripts at the end avoid need for dealing with async, defer, or onload event handlers -->
+  <!-- Scripts -->
   <script src="https://d3js.org/d3.v6.min.js"></script>
   <script src="js/railRidershipByTimePeriod.js"></script>
   <script src="js/monthlyRidershipByMode.js"></script>
+  <script src="js/ridershipHeatmap.js"></script>
   <script src="js/visualization.js"></script>
+
 </body>
 
 </html>
