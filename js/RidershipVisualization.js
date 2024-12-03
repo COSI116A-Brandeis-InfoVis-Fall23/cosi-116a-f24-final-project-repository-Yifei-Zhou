@@ -64,3 +64,19 @@ function brushEnded(event) {
         console.log("Brushed data:", filteredData);
     }
 }
+
+
+
+const zoom = d3.zoom()
+    .scaleExtent([1, 10])
+    .translateExtent([[0, 0], [width, height]])
+    .on("zoom", zoomed);
+
+svg.call(zoom);
+
+function zoomed(event) {
+    const transform = event.transform;
+    const newX = transform.rescaleX(x);
+    svg.select(".x.axis").call(xAxis.scale(newX));
+    svg.select(".line").attr("d", line.x(d => newX(d.date)));
+}
