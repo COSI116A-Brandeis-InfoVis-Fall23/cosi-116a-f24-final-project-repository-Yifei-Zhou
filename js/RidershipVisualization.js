@@ -36,3 +36,14 @@ data.forEach(function(d) {
 
 x.domain(d3.extent(data, function(d) { return d.date; }));
 y.domain([0, d3.max(data, function(d) { return d.ridership; })]);
+
+
+
+const line = d3.line()
+    .x(function(d) { return x(d.date); })
+    .y(function(d) { return y(d.ridership); });
+
+svg.append("path")
+    .data([data])
+    .attr("class", "line")
+    .attr("d", line);
