@@ -11,7 +11,8 @@ const railRidershipByTimePeriodChartConfig = {
 
 const monthlyRidershipByModeChartConfig = {
   width: 600,
-  height: 400
+  height: 400,
+  container: ".monthlyRidershipByMode-chart"
 };
 
 // Function to render all visualizations
