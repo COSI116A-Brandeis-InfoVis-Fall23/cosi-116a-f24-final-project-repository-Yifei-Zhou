@@ -116,6 +116,33 @@
 
     <p><em>Expectation: Data sources match the problem statement and are appropriate. These descriptions should be very
         explicit so someone could read your page and properly reproduce your results.</em></p>
+    
+    <h3>Fall 2023 MBTA Rail Ridership Data by SDP Time Period, Route/Line, and Stop</h3>
+    <a href="https://mbta-massdot.opendata.arcgis.com/datasets/80a379ebaa374cfd836ca4d3880ceda4_0/explore">Source: Massachusetts geoDOT</a>
+    <p>
+      The dataset used for this project contains MBTA rail ridership data by route, 
+      time period, and stop. The key columns include route_name, time_period_name, 
+      average_flow, and other attributes detailing public transit information. 
+      The dataset captures ridership statistics across various subway lines, including 
+      metrics for different time periods throughout the day.
+    </p>
+    <p>
+      The data types primarily consist of categorical variables 
+      (route_name, time_period_name) and numerical variables (average_flow). 
+      The categorical data represents the subway lines and time intervals, 
+      while the numerical data represents ridership counts (average flow).
+    </p>
+    <p>
+      During data preprocessing, we grouped the data by route_name and 
+      time_period_name to analyze ridership trends across different subway lines 
+      and time periods. We calculated the mean average_flow for each combination of 
+      route and time period, while also ensuring logical sorting of the time 
+      periods (e.g., VERY_EARLY_MORNING, AM_PEAK, MIDDAY_SCHOOL) to accurately 
+      reflect the order of events throughout a day. Additionally, the OFF_PEAK 
+      category was excluded to focus on the more significant ridership periods. 
+      The preprocessing steps aimed to clean, structure, and format the data for 
+      effective visualization and analysis.
+    </p>
 
     <h1>Task Analysis</h1>
 
