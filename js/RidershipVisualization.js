@@ -80,3 +80,17 @@ function zoomed(event) {
     svg.select(".x.axis").call(xAxis.scale(newX));
     svg.select(".line").attr("d", line.x(d => newX(d.date)));
 }
+
+
+svg.selectAll("circle")
+    .data(data)
+    .enter().append("circle")
+    .attr("cx", d => x(d.date))
+    .attr("cy", d => y(d.ridership))
+    .attr("r", 3)
+    .on("mouseover", function(event, d) {
+        d3.select(this).attr("r", 6).style("fill", "red");
+    })
+    .on("mouseout", function() {
+        d3.select(this).attr("r", 3).style("fill", "black");
+    });
