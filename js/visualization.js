@@ -10,8 +10,8 @@ const railRidershipByTimePeriodChartConfig = {
 };
 
 const monthlyRidershipByModeChartConfig = {
-  width: 600,
-  height: 400,
+  width: 1440,
+  height: 480,
   container: ".monthlyRidershipByMode-chart"
 };
 
