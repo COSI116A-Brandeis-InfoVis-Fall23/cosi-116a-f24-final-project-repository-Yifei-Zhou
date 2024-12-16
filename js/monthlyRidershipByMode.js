@@ -25,7 +25,7 @@ function monthlyRidershipByModeChart(config) {
     d3.csv("../data/MBTA_Monthly_Ridership_By_Mode.csv").then(function (data) {
         console.log("Data loaded: ", data);
 
-        // Parse data to group and format it for D3 line chart
+        // Parse data
         data.forEach(d => {
             d.service_date = d3.timeParse("%Y/%m")(d.service_date);
             d.total_monthly_weekday_ridership = +d.total_monthly_weekday_ridership;
@@ -115,6 +115,9 @@ function monthlyRidershipByModeChart(config) {
             .style("fill", d => color(d.key))
             .text(d => d.key);
 
+        // Track the current zoom transform
+        let currentTransform = d3.zoomIdentity;
+
         // Add brushing
         const brush = d3.brush()
             .extent([[0, 0], [width, height]])
@@ -125,19 +128,25 @@ function monthlyRidershipByModeChart(config) {
             .call(brush);
 
         function brushed(event) {
-            if (event.selection) {
-                const [[x0, y0], [x1, y1]] = event.selection;
-                lines.style("stroke-opacity", d => {
-                    const visible = d.values.some(point => {
-                        const x = xScale(point.service_date);
-                        const y = yScale(point.total_monthly_weekday_ridership);
-                        return x >= x0 && x <= x1 && y >= y0 && y <= y1;
-                    });
-                    return visible ? 1 : 0.1;
-                });
-            } else {
-                lines.style("stroke-opacity", 1);
+            if (!event.selection) {
+                lines.style("stroke-opacity", 1); // Reset opacity if no brush selection
+                return;
             }
+
+            const [[x0, y0], [x1, y1]] = event.selection;
+
+            // Use transformed scales if zoomed
+            const transformedXScale = currentTransform.rescaleX(xScale);
+            const transformedYScale = currentTransform.rescaleY(yScale);
+
+            lines.style("stroke-opacity", d => {
+                const isVisible = d.values.some(point => {
+                    const x = transformedXScale(point.service_date);
+                    const y = transformedYScale(point.total_monthly_weekday_ridership);
+                    return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+                });
+                return isVisible ? 1 : 0.1; // Adjust visibility
+            });
         }
 
         // Add zooming
@@ -154,22 +163,28 @@ function monthlyRidershipByModeChart(config) {
             .call(zoom);
 
         function zoomed(event) {
-            const transform = event.transform;
-            const newXScale = transform.rescaleX(xScale);
-            const newYScale = transform.rescaleY(yScale);
+            currentTransform = event.transform;
+            const newXScale = currentTransform.rescaleX(xScale);
+            const newYScale = currentTransform.rescaleY(yScale);
 
+            // Update axes
             svg.select(".x-axis").call(d3.axisBottom(newXScale));
             svg.select(".y-axis").call(d3.axisLeft(newYScale));
 
-            lines.attr("d", d => line.x(d => newXScale(d.service_date)).y(d => newYScale(d.total_monthly_weekday_ridership))(d.values));
+            // Update line paths
+            lines.attr("d", d =>
+                d3.line()
+                    .x(p => newXScale(p.service_date))
+                    .y(p => newYScale(p.total_monthly_weekday_ridership))(d.values)
+            );
         }
 
         // Add highlighting on line selection
-        lines.on("mouseover", function (event, d) {
+        lines.on("mouseover", function () {
             d3.select(this)
                 .style("stroke-width", 4)
                 .style("stroke-opacity", 1);
-        }).on("mouseout", function (event, d) {
+        }).on("mouseout", function () {
             d3.select(this)
                 .style("stroke-width", 2)
                 .style("stroke-opacity", 1);
@@ -180,5 +195,5 @@ function monthlyRidershipByModeChart(config) {
     });
 }
 
-// Example usage
-// var myChart = monthlyRidershipByModeChart({ width: 720, height: 480, container: ".ridership-chart" });
+// Example usage:
+// monthlyRidershipByModeChart({ width: 720, height: 480, container: ".ridership-chart" });

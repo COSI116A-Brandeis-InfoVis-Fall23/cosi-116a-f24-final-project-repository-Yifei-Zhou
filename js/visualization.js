@@ -53,20 +53,7 @@ function renderVisualizations() {
       data: heatmapData
     });
   });
-
-  d3.csv("./data/MBTA_Monthly_Ridership_By_Mode.csv").then(data => {
-    // Prepare data for monthly ridership by mode
-    const monthlyData = data.map(d => ({
-      mode: d.mode,
-      month: d.month,
-      ridership: +d.ridership
-    }));
-
-    monthlyRidershipByModeChart({
-      ...monthlyRidershipByModeChartConfig,
-      data: monthlyData
-    });
-  });
+  monthlyRidershipByModeChart(monthlyRidershipByModeChartConfig);
 }
 
 // Execute the rendering function when the document is ready
