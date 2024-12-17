@@ -216,7 +216,16 @@ function railRidershipByTimePeriodChart(config) {
     }
 
     svg.on("click", function () {
-      svg.selectAll("circle").attr("r", 3).style("fill", "black");
+      // De-select any selected circles
+      svg.selectAll("circle.selected")
+        .classed("selected", false)
+        .attr("r", 3)
+        .style("fill", "black");
+      
+      // De-select any selected lines
+      svg.selectAll(".line.selected")
+        .classed("selected", false)
+        .style("stroke-width", 2);
     });
 
     lines.on("mouseover", function (event, d) {
