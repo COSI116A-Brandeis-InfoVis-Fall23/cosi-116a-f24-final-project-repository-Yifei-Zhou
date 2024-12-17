@@ -100,6 +100,15 @@ function railRidershipByTimePeriodChart(config) {
     // Add lines for each route
     const color = d3.scaleOrdinal(d3.schemeCategory10);
 
+    // Add brushing
+    const brush = d3.brush()
+      .extent([[0, 0], [width, height]])
+      .on("brush end", brushed);
+
+    svg.append("g")
+      .attr("class", "brush")
+      .call(brush);
+
     const lines = svg.selectAll(".line")
       .data(nestedData)
       .enter()
@@ -120,71 +129,125 @@ function railRidershipByTimePeriodChart(config) {
       .attr("y", (d, i) => i * 20)
       .style("fill", d => color(d.key))
       .text(d => d.key);
+    
+    // 🔴 Add circles for each data point
+    const circles = svg.selectAll(".circle-group")
+      .data(nestedData)
+      .enter()
+      .append("g")
+      .selectAll("circle")
+      .data(d => d.values)
+      .enter().append("circle")
+      .attr("cx", d => xScale(d.key))
+      .attr("cy", d => yScale(d.value))
+      .attr("r", 3)
+      .on("mouseover", function (event, d) {
+        // If it's not selected, highlight on mouseover
+        if (!d3.select(this).classed("selected")) {
+          d3.select(this).attr("r", 6).style("fill", "red");
+        }
+      })
+      .on("mouseout", function () {
+        // If it's not selected, revert on mouseout
+        if (!d3.select(this).classed("selected")) {
+          d3.select(this).attr("r", 3).style("fill", "black");
+        }
+      })
+      .on("click", function (event, d) {
+        const circle = d3.select(this);
+        const isSelected = circle.classed("selected");
+    
+        if (isSelected) {
+          // If already selected, unselect and revert style
+          circle.classed("selected", false)
+            .attr("r", 3)
+            .style("fill", "black");
+        } else {
+          // If not selected, keep it highlighted
+          circle.classed("selected", true)
+            .attr("r", 6)
+            .style("fill", "red");
+        }
+    
+        // Stop event propagation if needed
+        event.stopPropagation();
+      });
+    
+    function updateChart(filteredData) {
+      xScale.domain(timePeriodOrder);
+      yScale.domain([0, d3.max(filteredData, d => d3.max(d.values, t => t.value))]).nice();
 
-    // Add brushing
-    const brush = d3.brush()
-      .extent([[0, 0], [width, height]])
-      .on("brush end", brushed);
+      svg.select(".x-axis").call(d3.axisBottom(xScale));
+      svg.select(".y-axis").call(d3.axisLeft(yScale));
 
-    svg.append("g")
-      .attr("class", "brush")
-      .call(brush);
+      lines.data(filteredData).attr("d", d => line(d.values));
+
+      const updatedCircles = svg.selectAll("circle").data(filteredData.flatMap(d => d.values));
+
+      updatedCircles.exit().remove();
+
+      updatedCircles.enter().append("circle")
+        .merge(updatedCircles)
+        .attr("cx", d => xScale(d.key))
+        .attr("cy", d => yScale(d.value))
+        .attr("r", 3)
+        .on("mouseover", function (event, d) {
+          d3.select(this).attr("r", 6).style("fill", "red");
+        })
+        .on("mouseout", function () {
+          d3.select(this).attr("r", 3).style("fill", "black");
+        });
+    }
 
     function brushed(event) {
-      if (event.selection) {
-        const [[x0, y0], [x1, y1]] = event.selection;
-        lines.style("stroke-opacity", d => {
-          const visible = d.values.some(point => {
+      const selection = event.selection;
+      if (selection) {
+        const [[x0, y0], [x1, y1]] = selection;
+        const filteredData = nestedData.map(d => ({
+          key: d.key,
+          values: d.values.filter(point => {
             const x = xScale(point.key);
             const y = yScale(point.value);
             return x >= x0 && x <= x1 && y >= y0 && y <= y1;
-          });
-          return visible ? 1 : 0.1;
-        });
-      } else {
-        lines.style("stroke-opacity", 1);
+          })
+        })).filter(d => d.values.length > 0);
+        updateChart(filteredData);
       }
     }
 
-    // Add zooming
-    const zoom = d3.zoom()
-      .scaleExtent([1, 10])
-      .translateExtent([[0, 0], [width, height]])
-      .on("zoom", zoomed);
-
-    svg.append("rect")
-      .attr("width", width)
-      .attr("height", height)
-      .style("fill", "none")
-      .style("pointer-events", "all")
-      .call(zoom);
-
-    function zoomed(event) {
-      const transform = event.transform;
-      const newXScale = transform.rescaleX(xScale);
-      const newYScale = transform.rescaleY(yScale);
-
-      svg.select(".x-axis").call(d3.axisBottom(newXScale));
-      svg.select(".y-axis").call(d3.axisLeft(newYScale));
-
-      lines.attr("d", d => line.x(d => newXScale(d.key)).y(d => newYScale(d.value))(d.values));
-    }
-
-    // Add highlighting on line selection
-    lines.on("mouseover", function (event, d) {
-      d3.select(this)
-        .style("stroke-width", 4)
-        .style("stroke-opacity", 1);
-    }).on("mouseout", function (event, d) {
-      d3.select(this)
-        .style("stroke-width", 2)
-        .style("stroke-opacity", 1);
+    svg.on("click", function () {
+      svg.selectAll("circle").attr("r", 3).style("fill", "black");
     });
 
+    lines.on("mouseover", function (event, d) {
+      // Highlight line on mouseover if not selected
+      if (!d3.select(this).classed("selected")) {
+        d3.select(this).style("stroke-width", 4);
+      }
+    })
+    .on("mouseout", function () {
+      // Revert line if not selected on mouseout
+      if (!d3.select(this).classed("selected")) {
+        d3.select(this).style("stroke-width", 2);
+      }
+    })
+    .on("click", function (event, d) {
+      const line = d3.select(this);
+      const isSelected = line.classed("selected");
+      
+      if (isSelected) {
+        // Unselect and revert
+        line.classed("selected", false)
+          .style("stroke-width", 2);
+      } else {
+        // Select and keep highlighted
+        line.classed("selected", true)
+          .style("stroke-width", 4);
+      }
+    
+      event.stopPropagation();
+    });
   }).catch(function (error) {
     console.error("Error loading the data: ", error);
   });
 }
-
-// Example usage
-// var myChart = railRidershipByTimePeriodChart({ width: 720, height: 480, container: ".ridership-chart" });
