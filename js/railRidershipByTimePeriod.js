@@ -20,11 +20,7 @@ function railRidershipByTimePeriodChart(config) {
     .append("g")
     .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  console.log("Loading data from: ../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv");
-
   d3.csv("../data/Fall_2023_MBTA_Rail_Ridership_Data_by_SDP_Time,_Period_Route_Line,_and_Stop.csv").then(function (data) {
-    console.log("Data loaded: ", data);
-
     // Ensure the time periods are sorted in a logical order
     const timePeriodOrder = [
       "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL", "MIDDAY_BASE", "PM_PEAK", "EVENING", "LATE_EVENING", "NIGHT"
@@ -45,11 +41,8 @@ function railRidershipByTimePeriodChart(config) {
       })
     }));
 
-    console.log("Nested data: ", nestedData);
-
     // Extract unique x-axis values (time_period_name categories)
     const timePeriods = timePeriodOrder;
-    console.log("Time periods: ", timePeriods);
 
     // Define scales
     const xScale = d3.scalePoint()

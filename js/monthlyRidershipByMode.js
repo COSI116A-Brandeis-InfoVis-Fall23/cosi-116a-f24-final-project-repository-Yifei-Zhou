@@ -17,11 +17,7 @@ function monthlyRidershipByModeChart(config) {
     // Keep track of the current zoom transform
     let currentTransform = d3.zoomIdentity;
 
-    console.log("Loading data from: ../data/MBTA_Monthly_Ridership_By_Mode.csv");
-
     d3.csv("../data/MBTA_Monthly_Ridership_By_Mode.csv").then(function (data) {
-        console.log("Data loaded: ", data);
-
         // Parse data
         data.forEach(d => {
             d.service_date = d3.timeParse("%Y/%m")(d.service_date);
@@ -32,8 +28,6 @@ function monthlyRidershipByModeChart(config) {
             key: key,
             values: values.sort((a, b) => d3.ascending(a.service_date, b.service_date))
         }));
-
-        console.log("Nested data: ", nestedData);
 
         // Define scales
         const xScale = d3.scaleTime()

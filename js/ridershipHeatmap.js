@@ -33,11 +33,8 @@ function ridershipHeatmap(config) {
         .slice(0, 10) // Keep the top 10
         .map(d => d[0]); // Extract the stop names
 
-    console.log("Top 10 Stops:", topStops);
-
     // Filter the data to include only the top 10 stops
     const filteredData = parsedData.filter(d => topStops.includes(d.stop_name));
-    console.log("Filtered Data:", filteredData);
 
     const timePeriods = [
         "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL",
