@@ -153,6 +153,22 @@
       effective visualization and analysis.
     </p>
 
+    <h3>Fall 2023 MBTA Monthly Ridership Data by Mode</h3>
+    <p>The dataset used in this project consists of monthly MBTA ridership data broken down by transit mode, sourced
+      from the file MBTA_Monthly_Ridership_By_Mode.csv. Each record provides a snapshot of monthly weekday ridership,
+      identified by a service_date field formatted as “YYYY/MM,” a mode field indicating the type of transit service
+      (e.g., bus, rapid transit, commuter rail, ferry), and a total_monthly_weekday_ridership field containing numeric
+      ridership counts. This structure allows for detailed time-series analysis of how different transit modes perform
+      over various months.</p>
+    <p>Before visualization and analysis, the data undergoes several preprocessing steps to ensure it is appropriately
+      structured and typed. The service_date strings are parsed into JavaScript Date objects using
+      d3.timeParse("%Y/%m"), facilitating accurate time-based plotting. Additionally, the
+      total_monthly_weekday_ridership values, initially loaded as strings, are converted into numerical types, enabling
+      proper scaling, axis generation, and arithmetic operations in the subsequent visualization.</p>
+    <p>Following these conversions, the dataset is grouped by mode and sorted chronologically by service_date. This
+      grouping and sorting ensure that each mode’s data forms a continuous time series, ready for line chart plotting.
+      As a result, the final processed dataset is clean, consistently typed, and logically organized, allowing
+      researchers to straightforwardly compare monthly ridership trends across various MBTA transit modes.</p>
     <h1>Task Analysis</h1>
 
     <p><em>Summary of task table.</em></p>
