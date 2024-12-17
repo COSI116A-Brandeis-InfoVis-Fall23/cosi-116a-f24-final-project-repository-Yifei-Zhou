@@ -1,163 +1,126 @@
 function ridershipHeatmap(config) {
-    // Extract configuration
-    const width = config.width;
-    const height = config.height;
-    const container = config.container;
-    const data = config.data;
-    const onBrush = config.onBrush;
-
-    // Margins around the visualization
+    const { width, height, container, data } = config;
     const margin = { top: 50, right: 150, bottom: 70, left: 150 };
+
     const svgWidth = width + margin.left + margin.right;
     const svgHeight = height + margin.top + margin.bottom;
 
-    // Clear any existing content in the container
-    const div = d3.select(container);
-    div.selectAll("*").remove();
+    const containerElement = d3.select(container);
+    if (containerElement.empty()) {
+        console.error("Container element not found: ", container);
+        return;
+    }
 
-    // Create the SVG container
-    const svg = div.append("svg")
-        .attr("width", svgWidth)
-        .attr("height", svgHeight);
+    containerElement.selectAll("svg").remove(); // Clear previous SVG if it exists
 
-    // Main chart group
-    const chartGroup = svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    // Parse numerical values
+    const parsedData = data.map(d => ({
+        stop_name: d.stop_name,
+        time_period_name: d.time_period_name,
+        average_flow: +d.average_flow // Ensure average_flow is numeric
+    }));
 
-    // Parse data: convert numeric fields
-    const parsedData = data.map(function(d) {
-        return {
-            stop_name: d.stop_name,
-            time_period_name: d.time_period_name,
-            average_flow: +d.average_flow
-        };
-    });
+    // Filter the top 10 stops based on total average ridership
+    const stopFlow = d3.rollup(
+        parsedData,
+        v => d3.sum(v, d => d.average_flow), // Sum average_flow for each stop
+        d => d.stop_name // Group by stop_name
+    );
 
-    // Compute top 10 stops by total flow across all time periods
-    const stopFlow = d3.nest()
-        .key(function(d) { return d.stop_name; })
-        .rollup(function(v) { return d3.sum(v, function(d) { return d.average_flow; }); })
-        .entries(parsedData)
-        .sort(function(a, b) { return b.value - a.value; })
-        .slice(0, 10)
-        .map(function(d) { return d.key; });
+    // Sort and select the top 10 stops
+    const topStops = Array.from(stopFlow)
+        .sort((a, b) => b[1] - a[1]) // Sort by total flow (descending)
+        .slice(0, 10) // Keep the top 10
+        .map(d => d[0]); // Extract the stop names
 
-    // Filter data to include only the top 10 stops
-    const filteredData = parsedData.filter(function(d) {
-        return stopFlow.includes(d.stop_name);
-    });
+    // Filter the data to include only the top 10 stops
+    const filteredData = parsedData.filter(d => topStops.includes(d.stop_name));
 
-    // Define the ordered time periods
     const timePeriods = [
         "VERY_EARLY_MORNING", "EARLY_AM", "AM_PEAK", "MIDDAY_SCHOOL",
         "MIDDAY_BASE", "PM_PEAK", "EVENING", "LATE_EVENING", "NIGHT"
     ];
 
-    // Create scales
-    const xScale = d3.scaleBand()
-        .domain(timePeriods)
-        .range([0, width])
-        .padding(0.05);
+    // Define scales
+    const xScale = d3.scaleBand().domain(timePeriods).range([0, width]).padding(0.05);
+    const yScale = d3.scaleBand().domain(topStops).range([0, height]).padding(0.05);
+    const colorScale = d3
+        .scaleSequential(d3.interpolateBlues)
+        .domain([0, d3.max(filteredData, d => d.average_flow)]);
 
-    const yScale = d3.scaleBand()
-        .domain(stopFlow)
-        .range([0, height])
-        .padding(0.05);
+    const svg = containerElement
+        .append("svg")
+        .attr("width", svgWidth)
+        .attr("height", svgHeight)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
 
-    const maxFlow = d3.max(filteredData, function(d) { return d.average_flow; });
-    const colorScale = d3.scaleLinear()
-        .domain([0, maxFlow])
-        .range(["#e6f7ff", "#08306b"]);
-
-    // Add cells for the heatmap
-    const cells = chartGroup.selectAll(".heatmap-cell")
+    // Draw heatmap cells
+    svg
+        .selectAll("rect")
         .data(filteredData)
         .enter()
         .append("rect")
-        .attr("class", "heatmap-cell")
-        .attr("x", function(d) { return xScale(d.time_period_name); })
-        .attr("y", function(d) { return yScale(d.stop_name); })
+        .attr("x", d => xScale(d.time_period_name))
+        .attr("y", d => yScale(d.stop_name))
         .attr("width", xScale.bandwidth())
         .attr("height", yScale.bandwidth())
-        .attr("fill", function(d) { return colorScale(d.average_flow); });
+        .attr("fill", d => colorScale(d.average_flow));
 
-    // Add X axis
-    const xAxis = d3.axisBottom(xScale);
-    chartGroup.append("g")
-        .attr("transform", "translate(0," + height + ")")
-        .call(xAxis)
+    // Add axes
+    svg
+        .append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(xScale))
         .selectAll("text")
         .attr("transform", "rotate(45)")
         .style("text-anchor", "start");
 
-    // Add Y axis
-    const yAxis = d3.axisLeft(yScale);
-    chartGroup.append("g")
-        .call(yAxis);
+    svg.append("g").call(d3.axisLeft(yScale));
 
-    // Define the brushing behavior
-    const brush = d3.brush()
-        .extent([[0, 0], [width, height]])
-        .on("start", brushStarted)
-        .on("brush", brushed)
-        .on("end", brushEnded);
+    // Add color legend
+    const legendWidth = 20;
+    const legendHeight = 200;
+    const legend = svg
+        .append("g")
+        .attr("transform", `translate(${width + 20}, 0)`);
 
-    // Add the brush to the chart
-    const brushGroup = chartGroup.append("g")
-        .attr("class", "brush")
-        .call(brush);
+    const legendScale = d3
+        .scaleLinear()
+        .domain([0, d3.max(filteredData, d => d.average_flow)])
+        .range([legendHeight, 0]);
 
-    // Brush event handlers
-    function brushStarted() {
-        // No action needed on start
-    }
+    const legendAxis = d3.axisRight(legendScale).ticks(5);
 
-    function brushed() {
-        const selection = d3.event.selection;
-        if (!selection) return;
+    legend
+        .append("g")
+        .call(legendAxis)
+        .attr("transform", `translate(${legendWidth}, 0)`);
 
-        const x0 = selection[0][0], y0 = selection[0][1];
-        const x1 = selection[1][0], y1 = selection[1][1];
+    const gradient = legend
+        .append("defs")
+        .append("linearGradient")
+        .attr("id", "heatmap-gradient")
+        .attr("x1", "0%")
+        .attr("y1", "100%")
+        .attr("x2", "0%")
+        .attr("y2", "0%");
 
-        // Highlight cells within the brush
-        cells.attr("stroke", function(d) {
-            const cellX = xScale(d.time_period_name) + xScale.bandwidth() / 2;
-            const cellY = yScale(d.stop_name) + yScale.bandwidth() / 2;
-            return (x0 <= cellX && cellX <= x1 && y0 <= cellY && cellY <= y1) ? "red" : "none";
-        }).attr("stroke-width", function(d) {
-            const cellX = xScale(d.time_period_name) + xScale.bandwidth() / 2;
-            const cellY = yScale(d.stop_name) + yScale.bandwidth() / 2;
-            return (x0 <= cellX && cellX <= x1 && y0 <= cellY && cellY <= y1) ? 2 : 0;
-        });
-    }
+    gradient
+        .append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", d3.interpolateBlues(0));
 
-    function brushEnded() {
-        const selection = d3.event.selection;
-        if (!selection) {
-            cells.attr("stroke", "none").attr("stroke-width", 0);
-            if (onBrush) onBrush([]);
-            return;
-        }
+    gradient
+        .append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", d3.interpolateBlues(1));
 
-        const x0 = selection[0][0], y0 = selection[0][1];
-        const x1 = selection[1][0], y1 = selection[1][1];
-
-        const brushedData = filteredData.filter(function(d) {
-            const cellX = xScale(d.time_period_name) + xScale.bandwidth() / 2;
-            const cellY = yScale(d.stop_name) + yScale.bandwidth() / 2;
-            return x0 <= cellX && cellX <= x1 && y0 <= cellY && cellY <= y1;
-        });
-
-        if (onBrush) onBrush(brushedData);
-    }
-
-    // Add a title above the chart
-    svg.append("text")
-        .attr("class", "chart-title")
-        .attr("x", svgWidth / 2)
-        .attr("y", margin.top / 2)
-        .attr("text-anchor", "middle")
-        .style("font-size", "18px")
-        .style("font-weight", "bold")
-        .text("Top 10 Stops Heatmap with Brushing & Linking");
+    legend
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", legendWidth)
+        .attr("height", legendHeight)
+        .style("fill", "url(#heatmap-gradient)");
 }
