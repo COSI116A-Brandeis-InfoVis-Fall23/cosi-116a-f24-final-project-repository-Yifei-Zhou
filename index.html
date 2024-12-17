@@ -28,7 +28,8 @@
 <body>
 
   <!-- Update this with your GitHub repo URL -->
-  <span id="forkongithub"><a href="https://github.com/COSI116A-Brandeis-InfoVis-Fall23/cosi-116a-f24-final-project-repository-Yifei-Zhou">Fork
+  <span id="forkongithub"><a
+      href="https://github.com/COSI116A-Brandeis-InfoVis-Fall23/cosi-116a-f24-final-project-repository-Yifei-Zhou">Fork
       me on GitHub</a></span>
 
   <!-- Your writeup goes here -->
@@ -36,7 +37,8 @@
 
     <h1>Project Team 22: Boston MBTA Transportations, COSI 116A F24</h1>
 
-    <p><strong>Yifei Zhou</strong>, <strong>Chengpeng Gao</strong>, <strong>Qifeng He</strong>, <strong>Suinan Xiao</strong></p>
+    <p><strong>Yifei Zhou</strong>, <strong>Chengpeng Gao</strong>, <strong>Qifeng He</strong>, <strong>Suinan
+        Xiao</strong></p>
 
     <p>Project-long Course Project as part of COSI 116A: Information Visualization</a>, taught by <a
         href="https://cs.brandeis.edu/~dylan/">Prof. Dylan Cashman</a>, <a href="https://cs.brandeis.edu/">Brandeis
@@ -44,41 +46,41 @@
 
     <h1>Motivation</h1>
 
-    <p>Our project focuses on analyzing the Boston Public Transportation system 
-      through data visualization, with the goal of uncovering insights into traffic 
-      congestion, subway ridership patterns, and efficiency comparisons with other 
-      cities. We aim to understand how well Boston public transport serves its 
-      population, especially in comparison to other cities like New York and Chicago. 
-      By using this data, we hope to provide actionable insights for improving public 
-      transportation and reducing traffic in Boston. The project will use various 
+    <p>Our project focuses on analyzing the Boston Public Transportation system
+      through data visualization, with the goal of uncovering insights into traffic
+      congestion, subway ridership patterns, and efficiency comparisons with other
+      cities. We aim to understand how well Boston public transport serves its
+      population, especially in comparison to other cities like New York and Chicago.
+      By using this data, we hope to provide actionable insights for improving public
+      transportation and reducing traffic in Boston. The project will use various
       datasets related to subway lines, ridership, delays, and traffic congestion.</p>
 
-    <p>Our team is dedicated to exploring the role of public transportation in 
-      reducing traffic congestion in major cities, with a specific focus on Boston's 
-      subway lines and a comparative analysis of public transportation efficiency 
+    <p>Our team is dedicated to exploring the role of public transportation in
+      reducing traffic congestion in major cities, with a specific focus on Boston's
+      subway lines and a comparative analysis of public transportation efficiency
       across different cities.</p>
-    
-      <h3>Project Goals:</h3>
-      <ol>
-        <li>Analyze How Public Transportation Reduces Traffic Congestion:
-          <ul>
-            <li>Investigate strategies employed by major cities to leverage public transport in easing traffic.</li>
-            <li>Assess the effectiveness of these strategies in real-world scenarios.</li>
-          </ul>
-        </li>
-        <li>Examine the Relationship Between Boston Subway Lines and Ridership:
-          <ul>
-            <li>Study ridership data across different lines.</li>
-            <li>Identify factors influencing ridership trends.</li>
-          </ul>
-        </li>
-        <li>Compare Public Transportation Efficiency Between Cities:
-          <ul>
-            <li>Select benchmark cities for comparison (e.g., New York, Chicago, San Francisco).</li>
-            <li>Evaluate key performance indicators like frequency, coverage, and user satisfaction.</li>
-          </ul>
-        </li>
-      </ol>
+
+    <h3>Project Goals:</h3>
+    <ol>
+      <li>Analyze How Public Transportation Reduces Traffic Congestion:
+        <ul>
+          <li>Investigate strategies employed by major cities to leverage public transport in easing traffic.</li>
+          <li>Assess the effectiveness of these strategies in real-world scenarios.</li>
+        </ul>
+      </li>
+      <li>Examine the Relationship Between Boston Subway Lines and Ridership:
+        <ul>
+          <li>Study ridership data across different lines.</li>
+          <li>Identify factors influencing ridership trends.</li>
+        </ul>
+      </li>
+      <li>Compare Public Transportation Efficiency Between Cities:
+        <ul>
+          <li>Select benchmark cities for comparison (e.g., New York, Chicago, San Francisco).</li>
+          <li>Evaluate key performance indicators like frequency, coverage, and user satisfaction.</li>
+        </ul>
+      </li>
+    </ol>
 
     <h1>Visualization</h1>
 
@@ -105,7 +107,9 @@
         a <a href="http://www.ccs.neu.edu/home/cody/courses/shared/d3-flexible-transitions.mp4">link to the video</a>
         instead.</p>
     </video>
-
+    <h1>MBTA Monthly Ridership by Mode</h1>
+    <p>This visualization shows the monthly ridership trends for different modes of transportation in the Boston area.
+    </p>
     <h1>Ridership Heatmap</h1>
     <p>This visualization shows the average ridership flow across stops and time periods.</p>
     <div class="ridership-heatmap"></div>
@@ -120,31 +124,32 @@
 
     <p><em>Expectation: Data sources match the problem statement and are appropriate. These descriptions should be very
         explicit so someone could read your page and properly reproduce your results.</em></p>
-    
+
     <h3>Fall 2023 MBTA Rail Ridership Data by SDP Time Period, Route/Line, and Stop</h3>
-    <a href="https://mbta-massdot.opendata.arcgis.com/datasets/80a379ebaa374cfd836ca4d3880ceda4_0/explore">Source: Massachusetts geoDOT</a>
+    <a href="https://mbta-massdot.opendata.arcgis.com/datasets/80a379ebaa374cfd836ca4d3880ceda4_0/explore">Source:
+      Massachusetts geoDOT</a>
     <p>
-      The dataset used for this project contains MBTA rail ridership data by route, 
-      time period, and stop. The key columns include route_name, time_period_name, 
-      average_flow, and other attributes detailing public transit information. 
-      The dataset captures ridership statistics across various subway lines, including 
+      The dataset used for this project contains MBTA rail ridership data by route,
+      time period, and stop. The key columns include route_name, time_period_name,
+      average_flow, and other attributes detailing public transit information.
+      The dataset captures ridership statistics across various subway lines, including
       metrics for different time periods throughout the day.
     </p>
     <p>
-      The data types primarily consist of categorical variables 
-      (route_name, time_period_name) and numerical variables (average_flow). 
-      The categorical data represents the subway lines and time intervals, 
+      The data types primarily consist of categorical variables
+      (route_name, time_period_name) and numerical variables (average_flow).
+      The categorical data represents the subway lines and time intervals,
       while the numerical data represents ridership counts (average flow).
     </p>
     <p>
-      During data preprocessing, we grouped the data by route_name and 
-      time_period_name to analyze ridership trends across different subway lines 
-      and time periods. We calculated the mean average_flow for each combination of 
-      route and time period, while also ensuring logical sorting of the time 
-      periods (e.g., VERY_EARLY_MORNING, AM_PEAK, MIDDAY_SCHOOL) to accurately 
-      reflect the order of events throughout a day. Additionally, the OFF_PEAK 
-      category was excluded to focus on the more significant ridership periods. 
-      The preprocessing steps aimed to clean, structure, and format the data for 
+      During data preprocessing, we grouped the data by route_name and
+      time_period_name to analyze ridership trends across different subway lines
+      and time periods. We calculated the mean average_flow for each combination of
+      route and time period, while also ensuring logical sorting of the time
+      periods (e.g., VERY_EARLY_MORNING, AM_PEAK, MIDDAY_SCHOOL) to accurately
+      reflect the order of events throughout a day. Additionally, the OFF_PEAK
+      category was excluded to focus on the more significant ridership periods.
+      The preprocessing steps aimed to clean, structure, and format the data for
       effective visualization and analysis.
     </p>
 
