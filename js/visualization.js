@@ -12,8 +12,8 @@ const monthlyRidershipByModeChartConfig = {
 };
 
 const ridershipHeatmapConfig = {
-  width: 800,
-  height: 600,
+  width: 1440,
+  height: 480,
   container: ".ridership-heatmap"
 };
 

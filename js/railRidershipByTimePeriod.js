@@ -199,24 +199,75 @@ function railRidershipByTimePeriodChart(config) {
         });
     }
 
+    // brushed() function
     function brushed(event) {
       const selection = event.selection;
-      if (selection) {
-        const [[x0, y0], [x1, y1]] = selection;
-        const filteredData = nestedData.map(d => ({
-          key: d.key,
-          values: d.values.filter(point => {
-            const x = xScale(point.key);
-            const y = yScale(point.value);
-            return x >= x0 && x <= x1 && y >= y0 && y <= y1;
-          })
-        })).filter(d => d.values.length > 0);
-        updateChart(filteredData);
+
+      if (!selection) {
+        // No selection: revert all lines and points to their original state
+        svg.selectAll(".line")
+          .style("stroke-opacity", 1);
+
+        svg.selectAll("circle")
+          .each(function() {
+            const circle = d3.select(this);
+            const selected = circle.classed("selected");
+            circle.attr("r", selected ? 6 : 3)
+                  .style("fill", selected ? "red" : "black");
+          });
+
+        return;
       }
+
+      const [[x0, y0], [x1, y1]] = selection;
+
+      // For lines, check if any point of that line is inside the brush area
+      svg.selectAll(".line")
+        .style("stroke-opacity", function(d) {
+          // d represents the line data with d.values
+          const lineHasPointInside = d.values.some(point => {
+            const px = xScale(point.key);
+            const py = yScale(point.value);
+            return px >= x0 && px <= x1 && py >= y0 && py <= y1;
+          });
+
+          return lineHasPointInside ? 1 : 0.1;
+        });
+
+      // For circles, check if they are inside the brush area
+      svg.selectAll("circle")
+        .each(function() {
+          const circle = d3.select(this);
+          const cx = +circle.attr("cx");
+          const cy = +circle.attr("cy");
+          const inside = cx >= x0 && cx <= x1 && cy >= y0 && cy <= y1;
+
+          // If inside the brush area
+          if (inside) {
+            // Highlight if not already selected
+            if (!circle.classed("selected")) {
+              circle.attr("r", 6).style("fill", "red");
+            }
+          } else {
+            // Outside the brush area: revert if not selected
+            if (!circle.classed("selected")) {
+              circle.attr("r", 3).style("fill", "black");
+            }
+          }
+        });
     }
 
     svg.on("click", function () {
-      svg.selectAll("circle").attr("r", 3).style("fill", "black");
+      // De-select any selected circles
+      svg.selectAll("circle.selected")
+        .classed("selected", false)
+        .attr("r", 3)
+        .style("fill", "black");
+      
+      // De-select any selected lines
+      svg.selectAll(".line.selected")
+        .classed("selected", false)
+        .style("stroke-width", 2);
     });
 
     lines.on("mouseover", function (event, d) {
