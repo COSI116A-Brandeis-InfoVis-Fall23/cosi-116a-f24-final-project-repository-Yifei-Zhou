@@ -14,13 +14,12 @@ function monthlyRidershipByModeChart(config) {
         .attr("height", svgHeight)
         .append("g")
         .attr("transform", `translate(${margin.left},${margin.top})`);
+
     // Keep track of the current zoom transform
     let currentTransform = d3.zoomIdentity;
 
-    console.log("Loading data from: ../data/MBTA_Monthly_Ridership_By_Mode.csv");
 
     d3.csv("../data/MBTA_Monthly_Ridership_By_Mode.csv").then(function (data) {
-        console.log("Data loaded: ", data);
 
         // Parse data
         data.forEach(d => {
@@ -33,7 +32,6 @@ function monthlyRidershipByModeChart(config) {
             values: values.sort((a, b) => d3.ascending(a.service_date, b.service_date))
         }));
 
-        console.log("Nested data: ", nestedData);
 
         // Define scales
         const xScale = d3.scaleTime()
@@ -50,18 +48,20 @@ function monthlyRidershipByModeChart(config) {
             .x(d => xScale(d.service_date))
             .y(d => yScale(d.total_monthly_weekday_ridership));
 
-
         // Draw axes
+        const xAxis = d3.axisBottom(xScale);
+        const yAxis = d3.axisLeft(yScale);
+
         svg.append("g")
             .attr("class", "x-axis")
             .attr("transform", `translate(0,${height})`)
-            .call(d3.axisBottom(xScale));
+            .call(xAxis);
 
         svg.append("g")
             .attr("class", "y-axis")
-            .call(d3.axisLeft(yScale));
+            .call(yAxis);
 
-        /// Axis labels
+        // Axis labels
         svg.append("text")
             .attr("class", "x-axis-label")
             .attr("x", width / 2)
@@ -111,10 +111,7 @@ function monthlyRidershipByModeChart(config) {
             .style("fill", d => color(d.key))
             .text(d => d.key);
 
-        // Track the current zoom transform
-        let currentTransform = d3.zoomIdentity;
-
-        /// Brush
+        // Brush
         const brush = d3.brush()
             .extent([[0, 0], [width, height]])
             .on("brush end", brushed);
@@ -135,9 +132,9 @@ function monthlyRidershipByModeChart(config) {
 
             lines.style("stroke-opacity", d => {
                 const isVisible = d.values.some(point => {
-                    const x = transformedXScale(point.service_date);
-                    const y = transformedYScale(point.total_monthly_weekday_ridership);
-                    return x >= x0 && x <= x1 && y >= y0 && y <= y1;
+                    const xVal = transformedXScale(point.service_date);
+                    const yVal = transformedYScale(point.total_monthly_weekday_ridership);
+                    return xVal >= x0 && xVal <= x1 && yVal >= y0 && yVal <= y1;
                 });
                 return isVisible ? 1 : 0.1;
             });
@@ -157,15 +154,17 @@ function monthlyRidershipByModeChart(config) {
             .call(zoom);
 
         function zoomed(event) {
+            // Update current transform
             currentTransform = event.transform;
+
             const newXScale = currentTransform.rescaleX(xScale);
             const newYScale = currentTransform.rescaleY(yScale);
 
-            // Redraw axes
+            // Redraw axes with transformed scales
             svg.select(".x-axis").call(d3.axisBottom(newXScale));
             svg.select(".y-axis").call(d3.axisLeft(newYScale));
 
-            // Redraw lines
+            // Redraw lines with transformed scales
             lines.attr("d", d =>
                 d3.line()
                     .x(p => newXScale(p.service_date))
