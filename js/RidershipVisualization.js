@@ -36,14 +36,21 @@ function ridershipVisualizationChart(config) {
 
     d3.csv("../data/MBTA_Commuter_Rail_Ridership_by_Trip_Season_Route_Line_and_Stop.csv").then(function(data) {
         console.log("Data loaded:", data);
+        const parseTime = d3.timeParse("%H:%M"); // Correct the date format here
+
+        console.log("First Row:", data[0]);
 
         // Now process data
         data.forEach(function(d) {
-            d.date = new Date(d.date);
-            d.ridership = +d.ridership;
+            const timeOnly = d.stop_time.split(' ')[1].substring(0, 5);
+            d.date = parseTime(timeOnly);       // Parse the 'stop_time' column
+            d.ridership = +d.average_load;         // Parse the 'average_load' column
         });
 
-        x.domain(d3.extent(data, d => d.date));
+        data = data.filter(d => d.date && !isNaN(d.ridership));
+        console.log("Data filtered:", data);
+
+        x.domain(d3.extent(data, d => d.date)); 
         y.domain([0, d3.max(data, d => d.ridership)]);
 
         const line = d3.line()
