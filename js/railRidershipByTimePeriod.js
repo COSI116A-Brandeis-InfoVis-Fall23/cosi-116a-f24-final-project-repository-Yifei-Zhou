@@ -98,7 +98,9 @@ function railRidershipByTimePeriodChart(config) {
       .text("Fall 2023 MBTA Rail Daily Ridership Data by Route and Time Period");
 
     // Add lines for each route
-    const color = d3.scaleOrdinal(d3.schemeCategory10);
+    const color = d3.scaleOrdinal()
+      .domain(["Blue Line", "Orange Line", "Red Line", "Green Line"])
+      .range(["blue", "orange", "red", "green"]);
 
     // Add brushing
     const brush = d3.brush()
